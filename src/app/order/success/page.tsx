@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle, Package, Truck, Mail, Sparkles, Loader2 } from 'lucide-react'
@@ -21,7 +22,7 @@ interface Order {
   items: OrderItem[]
 }
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const sessionId = searchParams.get('session_id')
   const clearCart = useCartStore(s => s.clearCart)
@@ -31,7 +32,6 @@ export default function OrderSuccessPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    // Clear cart immediately
     clearCart()
 
     if (!sessionId) {
@@ -39,7 +39,6 @@ export default function OrderSuccessPage() {
       return
     }
 
-    // Verify payment and confirm order with Stripe
     fetch('/api/orders/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,8 +58,6 @@ export default function OrderSuccessPage() {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center px-4 py-16">
-
-      {/* Celebration icon */}
       <div className="relative mb-8">
         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center">
           {verifying
@@ -85,36 +82,25 @@ export default function OrderSuccessPage() {
         ) : error ? (
           <>
             <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Payment Received</h1>
-            <p className="text-gray-500 mb-4">
-              Your payment was successful. There was a small delay confirming your order — it will appear in your account shortly.
-            </p>
+            <p className="text-gray-500 mb-4">Your payment was successful. There was a small delay confirming your order — it will appear in your account shortly.</p>
             <p className="text-sm text-red-400 mb-6">{error}</p>
           </>
         ) : (
           <>
             <h1 className="text-4xl font-serif font-bold text-gray-900 mb-3">Order Confirmed!</h1>
             <p className="text-xl text-gray-600 mb-1">Thank you for your purchase 🙏</p>
-            {order && (
-              <p className="text-sm text-crystal-600 font-medium mb-2">
-                Order #{order.orderNumber}
-              </p>
-            )}
-            <p className="text-gray-500 mb-6">
-              Your healing crystals are on their way. You'll receive a confirmation email shortly.
-            </p>
+            {order && <p className="text-sm text-crystal-600 font-medium mb-2">Order #{order.orderNumber}</p>}
+            <p className="text-gray-500 mb-6">Your healing crystals are on their way. You'll receive a confirmation email shortly.</p>
           </>
         )}
 
-        {/* Order summary */}
         {order && (
           <div className="bg-white border border-gray-100 rounded-2xl p-5 mb-6 text-left shadow-sm">
             <h2 className="font-semibold text-gray-800 mb-3 text-sm uppercase tracking-wide">Order Summary</h2>
             <div className="space-y-2 mb-3">
               {order.items.map(item => (
                 <div key={item.id} className="flex items-center gap-3">
-                  {item.image && (
-                    <img src={item.image} alt={item.name} className="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0" />
-                  )}
+                  {item.image && <img src={item.image} alt={item.name} className="w-10 h-10 rounded-lg object-cover border border-gray-100 flex-shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-800 font-medium truncate">{item.name}</p>
                     <p className="text-xs text-gray-400">Qty {item.quantity}</p>
@@ -130,7 +116,6 @@ export default function OrderSuccessPage() {
           </div>
         )}
 
-        {/* What happens next */}
         {!verifying && (
           <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-8 text-left shadow-sm">
             <h2 className="font-semibold text-gray-900 mb-4 text-center">What happens next?</h2>
@@ -152,7 +137,6 @@ export default function OrderSuccessPage() {
           </div>
         )}
 
-        {/* Actions */}
         {!verifying && (
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/account/orders" className="btn-primary">View My Orders</Link>
@@ -160,7 +144,6 @@ export default function OrderSuccessPage() {
           </div>
         )}
 
-        {/* Crystal care tip */}
         {!verifying && (
           <div className="mt-10 p-4 bg-crystal-50 rounded-xl text-sm text-crystal-700">
             <p className="font-medium mb-1">✨ Crystal Care Tip</p>
@@ -169,5 +152,20 @@ export default function OrderSuccessPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-crystal-400 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">Loading your order...</p>
+        </div>
+      </div>
+    }>
+      <OrderSuccessContent />
+    </Suspense>
   )
 }
