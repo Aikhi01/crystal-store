@@ -6,7 +6,9 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-
+    env: {
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'https://crystal-store-six.vercel.app',
+  },
   images: {
     remotePatterns: [
       {
