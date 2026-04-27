@@ -81,6 +81,4 @@ export async function POST(request: Request) {
   }
 }
 
-export const config = {
-  api: { bodyParser: false },
-}
+// Next.js App Router reads raw body by default — no config needed
