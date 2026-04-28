@@ -76,7 +76,7 @@ export default function SignInPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 font-serif text-2xl font-bold text-crystal-700 mb-6">
             <Sparkles className="w-6 h-6 text-crystal-500" />
-            lsle of Mist
+            Isle of Mist
           </Link>
           <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">Welcome back</h1>
           <p className="text-gray-500">Sign in to your account</p>
