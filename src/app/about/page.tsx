@@ -11,13 +11,13 @@ export default function AboutPage() {
         <div className="absolute bottom-0 left-10 w-64 h-64 bg-mist-200/20 rounded-full blur-3xl" />
         <div className="relative max-w-4xl mx-auto px-4 text-center">
           <div className="inline-flex items-center gap-2 text-crystal-600 text-sm font-medium mb-4">
-            <Leaf className="w-4 h-4" /> lsle of Mist · Our Story
+            <Leaf className="w-4 h-4" /> Isle of Mist · Our Story
           </div>
           <h1 className="text-5xl font-serif font-bold text-gray-900 mb-6 leading-tight">
             Guided by Stars,<br />Carried with Gentleness
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            The story behind lsle of Mist healing crystal bracelets
+            The story behind Isle of Mist healing crystal bracelets
           </p>
         </div>
       </section>
