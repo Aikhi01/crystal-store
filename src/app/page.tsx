@@ -89,7 +89,7 @@ export default async function HomePage() {
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <Image
                     src="https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=800"
-                    alt="lsle of Mist — Healing Crystal Bracelets"
+                    alt="Isle of Mist — Healing Crystal Bracelets"
                     width={600}
                     height={600}
                     className="object-cover w-full"
@@ -141,7 +141,7 @@ export default async function HomePage() {
             Life holds so many quiet exhaustions — the relentless pace, the unexpected waves of anxiety, the wordless burnout that settles like mist around your heart, slowly stealing your sense of peace.
           </p>
           <p className="text-gray-600 leading-relaxed text-lg mb-8">
-            lsle of Mist was born from a simple longing: to bring nature's stillness closer. To let each crystal become a personal sanctuary — a gentle companion that soothes without words, and holds you steady when the world feels too loud.
+            Isle of Mist was born from a simple longing: to bring nature's stillness closer. To let each crystal become a personal sanctuary — a gentle companion that soothes without words, and holds you steady when the world feels too loud.
           </p>
           <Link href="/about" className="btn-primary">
             Read Our Full Story <ArrowRight className="w-4 h-4" />
@@ -226,7 +226,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-4xl font-serif font-bold text-gray-900 mb-3">What Our Customers Say</h2>
-            <p className="text-gray-500">Real stories from the lsle of Mist community</p>
+            <p className="text-gray-500">Real stories from the Isle of Mist community</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
