@@ -3,9 +3,6 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { join, extname } from 'path'
-import { existsSync } from 'fs'
 
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -26,17 +23,45 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Unique filename: timestamp + random + original ext
-    const ext = extname(file.name) || '.jpg'
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`
+    // Upload to Cloudinary via REST API (no SDK needed)
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadDir)) await mkdir(uploadDir, { recursive: true })
+    if (!cloudName || !apiKey || !apiSecret) {
+      return NextResponse.json({ error: 'Cloudinary not configured' }, { status: 500 })
+    }
 
-    await writeFile(join(uploadDir, filename), buffer)
+    // Build multipart form for Cloudinary upload API
+    const timestamp = Math.floor(Date.now() / 1000).toString()
+    const folder = 'crystal-store'
 
-    const url = `/uploads/${filename}`
-    return NextResponse.json({ url, filename })
+    // Generate signature: SHA-1 of "folder=...&timestamp=...{secret}"
+    const { createHash } = await import('crypto')
+    const signStr = `folder=${folder}&timestamp=${timestamp}${apiSecret}`
+    const signature = createHash('sha1').update(signStr).digest('hex')
+
+    const cloudForm = new FormData()
+    cloudForm.append('file', new Blob([buffer], { type: file.type }), file.name)
+    cloudForm.append('api_key', apiKey)
+    cloudForm.append('timestamp', timestamp)
+    cloudForm.append('folder', folder)
+    cloudForm.append('signature', signature)
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      { method: 'POST', body: cloudForm }
+    )
+
+    if (!res.ok) {
+      const err = await res.text()
+      return NextResponse.json({ error: `Cloudinary error: ${err}` }, { status: 500 })
+    }
+
+    const data = await res.json()
+    const url = data.secure_url as string
+
+    return NextResponse.json({ url, filename: data.public_id })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
