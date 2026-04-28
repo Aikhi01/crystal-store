@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     template: '%s | lsle of Mist',
   },
   description:
-    'Handcrafted healing crystal bracelets made from ethically sourced natural gemstones. lsle of Mist — soothe anxiety, restore inner peace. Free shipping over $50.',
-  keywords: ['healing crystals', 'crystal bracelet', 'lsle of Mist', 'amethyst bracelet', 'rose quartz', 'chakra bracelet', 'natural gemstone jewelry'],
+    'Handcrafted healing crystal bracelets made from ethically sourced natural gemstones. Isle of Mist — soothe anxiety, restore inner peace. Free shipping over $50.',
+  keywords: ['healing crystals', 'crystal bracelet', 'Isle of Mist', 'amethyst bracelet', 'rose quartz', 'chakra bracelet', 'natural gemstone jewelry'],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: 'lsle of Mist',
+    siteName: 'Isle of Mist',
   },
 }
 
