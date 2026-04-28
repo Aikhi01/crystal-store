@@ -41,7 +41,7 @@ export default function Header() {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 font-serif text-2xl font-bold text-crystal-800 tracking-wide">
               <Leaf className="w-6 h-6 text-crystal-500" />
-              lsle of Mist
+              Isle of Mist
             </Link>
 
             {/* Desktop Nav */}
