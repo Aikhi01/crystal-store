@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   description:
     'Handcrafted healing crystal bracelets made from ethically sourced natural gemstones. lsle of Mist — soothe anxiety, restore inner peace. Free shipping over $50.',
   keywords: ['healing crystals', 'crystal bracelet', 'lsle of Mist', 'amethyst bracelet', 'rose quartz', 'chakra bracelet', 'natural gemstone jewelry'],
+    icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
