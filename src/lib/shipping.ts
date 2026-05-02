@@ -71,6 +71,7 @@ export function calculateTax(subtotal: number, countryCode: string): number {
 export const COUNTRY_CODES: { code: string; name: string }[] = [
   { code: 'US', name: 'United States' },
   { code: 'GB', name: 'United Kingdom' },
+  { code: 'CN', name: 'China' },
   { code: 'CA', name: 'Canada' },
   { code: 'AU', name: 'Australia' },
   { code: 'DE', name: 'Germany' },
