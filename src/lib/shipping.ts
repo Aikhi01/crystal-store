@@ -19,11 +19,22 @@ export async function getShippingOptions(
     include: { rates: true },
   })
 
-  const matchedZone =
-    zones.find(z => {
-      const countries: string[] = JSON.parse(z.countries)
-      return countries.includes(countryCode)
-    }) ?? zones.find(z => JSON.parse(z.countries).includes('__default__'))
+  const parseCountries = (raw: string): string[] => {
+  try {
+    // PostgreSQL array format: {US,GB,CA,...}
+    if (raw.startsWith('{')) {
+      return raw.slice(1, -1).split(',').map(s => s.trim().replace(/"/g, ''))
+    }
+    // JSON array format: ["US","GB",...]
+    return JSON.parse(raw)
+  } catch {
+    return []
+  }
+}
+
+const matchedZone =
+  zones.find(z => parseCountries(z.countries).includes(countryCode)) ??
+  zones.find(z => parseCountries(z.countries).includes('__default__'))
 
   if (!matchedZone) return []
 
