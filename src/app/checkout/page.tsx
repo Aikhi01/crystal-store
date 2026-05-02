@@ -83,7 +83,7 @@ export default function CheckoutPage() {
     if (items.length === 0) return
     setPlacing(true)
     try {
-      const res = await fetch('/api/checkout', {
+      const res = await fetch('/api/checkout/paypal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -259,8 +259,8 @@ export default function CheckoutPage() {
           <div className="p-4 bg-blue-50 rounded-xl flex items-start gap-3">
             <CreditCard className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-700">
-              <p className="font-medium mb-1">Secure Payment via Stripe</p>
-              <p>You'll be redirected to Stripe's secure payment page. We accept Visa, Mastercard, Amex, and more.</p>
+              <p className="font-medium mb-1">Secure Payment via PayPal</p>
+              <p>You'll be redirected to PayPal's secure payment page. Pay with your PayPal account or credit/debit card.</p>
             </div>
           </div>
 
@@ -338,7 +338,7 @@ export default function CheckoutPage() {
             <div className="mt-4 pt-4 border-t border-gray-200">
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <Lock className="w-3.5 h-3.5" />
-                <span>SSL Encrypted • Powered by Stripe</span>
+                <span>SSL Encrypted • Powered by PayPal</span>
               </div>
             </div>
           </div>
