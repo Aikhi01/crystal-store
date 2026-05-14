@@ -17,6 +17,15 @@ type Order = {
   user: { name: string | null; email: string | null } | null
 }
 
+async function cancelOrder(id: string): Promise<boolean> {
+  const res = await fetch(`/api/admin/orders/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'cancelled' }),
+  })
+  return res.ok
+}
+
 const statusColors: Record<string, string> = {
   pending: 'badge-yellow',
   paid: 'badge-green',
@@ -31,16 +40,33 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>(
+    () => Object.fromEntries(orders.map(o => [o.id, o.status]))
+  )
+  const [cancelling, setCancelling] = useState<string | null>(null)
 
   const filtered = useMemo(() => {
     return orders.filter(order => {
       const date = new Date(order.createdAt)
       if (dateFrom && date < new Date(dateFrom)) return false
       if (dateTo && date > new Date(dateTo + 'T23:59:59')) return false
-      if (statusFilter && order.status !== statusFilter) return false
+      const currentStatus = orderStatuses[order.id] ?? order.status
+      if (statusFilter && currentStatus !== statusFilter) return false
       return true
     })
-  }, [orders, dateFrom, dateTo, statusFilter])
+  }, [orders, dateFrom, dateTo, statusFilter, orderStatuses])
+
+  async function handleCancel(id: string) {
+    if (!confirm('Cancel this order?')) return
+    setCancelling(id)
+    const ok = await cancelOrder(id)
+    if (ok) {
+      setOrderStatuses(prev => ({ ...prev, [id]: 'cancelled' }))
+    } else {
+      alert('Failed to cancel order. Please try again.')
+    }
+    setCancelling(null)
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -128,20 +154,36 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
                 <td className="px-4 py-3 text-gray-600">{order.items.length} item(s)</td>
                 <td className="px-4 py-3 font-semibold text-gray-900">{formatPrice(order.total)}</td>
                 <td className="px-4 py-3">
-                  <span className={statusColors[order.status] ?? 'badge bg-gray-100 text-gray-600'}>
-                    {order.status}
-                  </span>
+                  {(() => {
+                    const s = orderStatuses[order.id] ?? order.status
+                    return (
+                      <span className={statusColors[s] ?? 'badge bg-gray-100 text-gray-600'}>
+                        {s}
+                      </span>
+                    )
+                  })()}
                 </td>
                 <td className="px-4 py-3 text-gray-500">
                   {format(new Date(order.createdAt), 'MMM d, yyyy')}
                 </td>
                 <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/orders/${order.id}`}
-                    className="text-crystal-600 hover:underline text-xs font-medium"
-                  >
-                    View Details
-                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="text-crystal-600 hover:underline text-xs font-medium"
+                    >
+                      View Details
+                    </Link>
+                    {(orderStatuses[order.id] ?? order.status) === 'pending' && (
+                      <button
+                        onClick={() => handleCancel(order.id)}
+                        disabled={cancelling === order.id}
+                        className="text-xs font-medium text-red-500 hover:text-red-700 hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {cancelling === order.id ? 'Cancelling…' : 'Cancel'}
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
