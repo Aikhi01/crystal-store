@@ -19,6 +19,7 @@ type Order = {
   tax: number
   total: number
   status: string
+  paymentStatus: string
   createdAt: string
   // customer
   shippingName: string | null
