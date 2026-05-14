@@ -5,16 +5,34 @@ import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { format } from 'date-fns'
 
+type OrderItem = {
+  product: { sku: string | null; name: string; price: number } | null
+  quantity: number
+  price: number
+}
+
 type Order = {
   id: string
   orderNumber: string
+  subtotal: number
+  shipping: number
+  tax: number
   total: number
   status: string
   createdAt: string
+  // customer
   shippingName: string | null
   guestEmail: string | null
-  items: { product: { sku: string | null; name: string } | null }[]
   user: { name: string | null; email: string | null } | null
+  // shipping address (stored on Order)
+  shippingLine1: string
+  shippingLine2: string | null
+  shippingCity: string
+  shippingState: string | null
+  shippingPostal: string
+  shippingCountry: string
+  // items
+  items: OrderItem[]
 }
 
 async function cancelOrder(id: string): Promise<boolean> {
@@ -26,28 +44,74 @@ async function cancelOrder(id: string): Promise<boolean> {
   return res.ok
 }
 
-function exportCSV(orders: Order[], statuses: Record<string, string>) {
-  const rows = [
-    ['Order', 'Customer', 'Email', 'SKU', 'Items', 'Total', 'Status', 'Date'],
-    ...orders.map(o => [
-      o.orderNumber,
-      o.user?.name ?? o.shippingName ?? '',
-      o.user?.email ?? o.guestEmail ?? '',
-      o.items.map(i => i.product?.sku ?? '').join(' / '),
-      String(o.items.length),
-      String(o.total),
-      statuses[o.id] ?? o.status,
-      format(new Date(o.createdAt), 'yyyy-MM-dd'),
-    ]),
+function buildAddress(order: Order) {
+  return [
+    order.shippingLine1,
+    order.shippingLine2,
+    order.shippingCity,
+    order.shippingState,
+    order.shippingPostal,
+    order.shippingCountry,
   ]
-  const csv = rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n')
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `orders-${format(new Date(), 'yyyyMMdd-HHmm')}.csv`
-  a.click()
-  URL.revokeObjectURL(url)
+    .filter(Boolean)
+    .join(', ')
+}
+
+async function exportXLSX(orders: Order[], statuses: Record<string, string>) {
+  const XLSX = await import('xlsx')
+
+  const rows = orders.map(o => ({
+    'Order #': o.orderNumber,
+    'Customer Name': o.user?.name ?? o.shippingName ?? '',
+    'Customer Email': o.user?.email ?? o.guestEmail ?? '',
+    'Product Name': o.items.map(i => i.product?.name ?? '').join(' / '),
+    SKU: o.items.map(i => i.product?.sku ?? '').join(' / '),
+    'Item Qty': o.items.reduce((sum, i) => sum + (i.quantity ?? 1), 0),
+    Subtotal: o.subtotal,
+    Shipping: o.shipping,
+    Tax: o.tax,
+    'Total (USD)': o.total,
+    Status: statuses[o.id] ?? o.status,
+    'Shipping Name': o.shippingName ?? '',
+    'Address Line 1': o.shippingLine1 ?? '',
+    'Address Line 2': o.shippingLine2 ?? '',
+    City: o.shippingCity ?? '',
+    State: o.shippingState ?? '',
+    'Postal Code': o.shippingPostal ?? '',
+    Country: o.shippingCountry ?? '',
+    'Full Address': buildAddress(o),
+    Date: format(new Date(o.createdAt), 'yyyy-MM-dd HH:mm'),
+  }))
+
+  const ws = XLSX.utils.json_to_sheet(rows)
+
+  // Column widths
+  ws['!cols'] = [
+    { wch: 22 }, // Order #
+    { wch: 18 }, // Customer Name
+    { wch: 26 }, // Customer Email
+    { wch: 30 }, // Product Name
+    { wch: 12 }, // SKU
+    { wch: 8  }, // Item Qty
+    { wch: 10 }, // Subtotal
+    { wch: 10 }, // Shipping
+    { wch: 8  }, // Tax
+    { wch: 12 }, // Total
+    { wch: 12 }, // Status
+    { wch: 18 }, // Shipping Name
+    { wch: 28 }, // Address Line 1
+    { wch: 18 }, // Address Line 2
+    { wch: 16 }, // City
+    { wch: 14 }, // State
+    { wch: 12 }, // Postal Code
+    { wch: 10 }, // Country
+    { wch: 40 }, // Full Address
+    { wch: 18 }, // Date
+  ]
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Orders')
+  XLSX.writeFile(wb, `orders-${format(new Date(), 'yyyyMMdd-HHmm')}.xlsx`)
 }
 
 const statusColors: Record<string, string> = {
@@ -71,6 +135,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
   )
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [page, setPage] = useState(1)
+  const [exporting, setExporting] = useState(false)
 
   const filtered = useMemo(() => {
     setPage(1)
@@ -98,6 +163,12 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
       alert('Failed to cancel order. Please try again.')
     }
     setCancelling(null)
+  }
+
+  async function handleExport() {
+    setExporting(true)
+    await exportXLSX(filtered, orderStatuses)
+    setExporting(false)
   }
 
   return (
@@ -153,13 +224,14 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
         <div className="ml-auto flex items-center gap-3">
           <span className="text-sm text-gray-400">{filtered.length} order(s)</span>
           <button
-            onClick={() => exportCSV(filtered, orderStatuses)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+            onClick={handleExport}
+            disabled={exporting || filtered.length === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
             </svg>
-            Export CSV
+            {exporting ? 'Exporting…' : 'Export XLSX'}
           </button>
         </div>
       </div>
