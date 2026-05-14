@@ -26,6 +26,30 @@ async function cancelOrder(id: string): Promise<boolean> {
   return res.ok
 }
 
+function exportCSV(orders: Order[], statuses: Record<string, string>) {
+  const rows = [
+    ['Order', 'Customer', 'Email', 'SKU', 'Items', 'Total', 'Status', 'Date'],
+    ...orders.map(o => [
+      o.orderNumber,
+      o.user?.name ?? o.shippingName ?? '',
+      o.user?.email ?? o.guestEmail ?? '',
+      o.items.map(i => i.product?.sku ?? '').join(' / '),
+      String(o.items.length),
+      String(o.total),
+      statuses[o.id] ?? o.status,
+      format(new Date(o.createdAt), 'yyyy-MM-dd'),
+    ]),
+  ]
+  const csv = rows.map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `orders-${format(new Date(), 'yyyyMMdd-HHmm')}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 const statusColors: Record<string, string> = {
   pending: 'badge-yellow',
   paid: 'badge-green',
@@ -36,6 +60,8 @@ const statusColors: Record<string, string> = {
   refunded: 'badge bg-gray-100 text-gray-700',
 }
 
+const PAGE_SIZE = 10
+
 export default function OrdersClient({ orders }: { orders: Order[] }) {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -44,8 +70,10 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
     () => Object.fromEntries(orders.map(o => [o.id, o.status]))
   )
   const [cancelling, setCancelling] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
 
   const filtered = useMemo(() => {
+    setPage(1)
     return orders.filter(order => {
       const date = new Date(order.createdAt)
       if (dateFrom && date < new Date(dateFrom)) return false
@@ -54,7 +82,11 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
       if (statusFilter && currentStatus !== statusFilter) return false
       return true
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orders, dateFrom, dateTo, statusFilter, orderStatuses])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   async function handleCancel(id: string) {
     if (!confirm('Cancel this order?')) return
@@ -118,7 +150,18 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
         >
           Clear
         </button>
-        <span className="text-sm text-gray-400 ml-auto">{filtered.length} order(s)</span>
+        <div className="ml-auto flex items-center gap-3">
+          <span className="text-sm text-gray-400">{filtered.length} order(s)</span>
+          <button
+            onClick={() => exportCSV(filtered, orderStatuses)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            Export CSV
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -137,7 +180,7 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {filtered.map(order => (
+            {paginated.map(order => (
               <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-4 py-3">
                   <span className="font-mono font-medium text-gray-900">#{order.orderNumber}</span>
@@ -193,6 +236,69 @@ export default function OrdersClient({ orders }: { orders: Order[] }) {
           <div className="text-center py-10 text-gray-400">No orders found</div>
         )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+          <span>
+            Showing {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
+          </span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(1)}
+              disabled={page === 1}
+              className="px-2 py-1 rounded border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+            >
+              «
+            </button>
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="px-2 py-1 rounded border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+            >
+              ‹
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+              .reduce<(number | '...')[]>((acc, p, idx, arr) => {
+                if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push('...')
+                acc.push(p)
+                return acc
+              }, [])
+              .map((p, i) =>
+                p === '...' ? (
+                  <span key={`ellipsis-${i}`} className="px-2">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p as number)}
+                    className={`px-3 py-1 rounded border text-sm transition-colors ${
+                      page === p
+                        ? 'bg-crystal-600 text-white border-crystal-600'
+                        : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                )
+              )}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="px-2 py-1 rounded border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+            >
+              ›
+            </button>
+            <button
+              onClick={() => setPage(totalPages)}
+              disabled={page === totalPages}
+              className="px-2 py-1 rounded border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
