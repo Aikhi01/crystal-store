@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 
+
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 
