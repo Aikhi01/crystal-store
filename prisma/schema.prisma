@@ -94,6 +94,10 @@ model Product {
   category   Category    @relation(fields: [categoryId], references: [id])
   orderItems OrderItem[]
   reviews    Review[]
+
+  @@index([categoryId, isActive])
+  @@index([isActive, createdAt])
+  @@index([isActive, featured])
 }
 
 model Address {

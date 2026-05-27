@@ -4,6 +4,9 @@ import type { ProductWithCategory } from '@/types'
 import { Filter } from 'lucide-react'
 import Link from 'next/link'
 
+// Cache product pages for 60 seconds — huge speedup vs hitting Neon on every request
+export const revalidate = 60
+
 interface ProductsPageProps {
   searchParams: {
     category?: string
@@ -38,13 +41,17 @@ async function getProducts(params: ProductsPageProps['searchParams']): Promise<P
 
   return prisma.product.findMany({
     where,
-    include: { category: true, reviews: true },
+    include: {
+      category: true,
+      // Only select rating field — avoids pulling full review text for every product
+      reviews: { select: { rating: true } },
+    },
     orderBy,
   })
 }
 
 async function getCategories() {
-  return prisma.category.findMany()
+  return prisma.category.findMany({ orderBy: { name: 'asc' } })
 }
 
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {

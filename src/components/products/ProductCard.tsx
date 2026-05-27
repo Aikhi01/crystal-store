@@ -51,6 +51,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             src={images[0] || 'https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=600'}
             alt={product.name}
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           {discount > 0 && (
