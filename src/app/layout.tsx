@@ -10,12 +10,12 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'lsle of Mist — Healing Crystal Bracelets · Where Nature Meets Calm',
-    template: '%s | lsle of Mist',
+    default: 'Isle of Mist — Healing Crystal Bracelets · Where Nature Meets Calm',
+    template: '%s | Isle of Mist',
   },
   description:
-    'Handcrafted healing crystal bracelets made from ethically sourced natural gemstones. lsle of Mist — soothe anxiety, restore inner peace. Free shipping over $50.',
-  keywords: ['healing crystals', 'crystal bracelet', 'lsle of Mist', 'amethyst bracelet', 'rose quartz', 'chakra bracelet', 'natural gemstone jewelry'],
+    'Handcrafted healing crystal bracelets made from ethically sourced natural gemstones. Isle of Mist — soothe anxiety, restore inner peace. Free shipping over $50.',
+  keywords: ['healing crystals', 'crystal bracelet', 'Isle of Mist', 'amethyst bracelet', 'rose quartz', 'chakra bracelet', 'natural gemstone jewelry'],
   icons: {
     icon: '/favicon.png',
     apple: '/favicon.png',
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_SITE_URL,
-    siteName: 'lsle of Mist',
+    siteName: 'Isle of Mist',
   },
 }
 
@@ -42,6 +42,8 @@ export default function RootLayout({
           <Footer />
           <Toaster position="bottom-right" />
         </Providers>
+        {/* Tidio Chat Widget */}
+        <script src="//code.tidio.co/o6crbhvgaabgrpbfvdcpyctlkz0bqztw.js" async></script>
       </body>
     </html>
   )
