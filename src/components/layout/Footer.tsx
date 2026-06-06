@@ -25,6 +25,9 @@ export default function Footer() {
               <a href="https://x.com/Isle_of_Mist" target="_blank" rel="noopener noreferrer" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
                 <Twitter className="w-4 h-4" />
               </a>
+              <a href="mailto:isle.of.mist1@gmail.com" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
+                <Mail className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
