@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { ArrowRight, Shield, Truck, RefreshCw, Star, Leaf, Heart, Wind, Droplets } from 'lucide-react'
 import { prisma } from '@/lib/prisma'
 import ProductCard from '@/components/products/ProductCard'
+import ParticleCanvas from '@/components/effects/ParticleCanvas'
 import type { ProductWithCategory } from '@/types'
 
 async function getFeaturedProducts(): Promise<ProductWithCategory[]> {
@@ -42,11 +43,12 @@ export default async function HomePage() {
     <>
       {/* Hero */}
       <section className="relative min-h-[88vh] flex items-center overflow-hidden bg-gradient-to-br from-crystal-50 via-white to-mist-50">
+        <ParticleCanvas />
         <div className="absolute top-10 right-0 w-[480px] h-[480px] bg-crystal-200/25 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-mist-200/20 rounded-full blur-3xl" />
         <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-moss-200/15 rounded-full blur-2xl" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full" style={{ zIndex: 2 }}>
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="order-2 md:order-1">
               <div className="inline-flex items-center gap-2 bg-crystal-100 text-crystal-700 rounded-full mb-6 text-sm py-1.5 px-4 font-medium">
@@ -142,7 +144,7 @@ export default async function HomePage() {
             Life holds so many quiet exhaustions — the relentless pace, the unexpected waves of anxiety, the wordless burnout that settles like mist around your heart, slowly stealing your sense of peace.
           </p>
           <p className="text-gray-600 leading-relaxed text-lg mb-8">
-            lsle of Mist was born from a simple longing: to bring nature's stillness closer. To let each crystal become a personal sanctuary — a gentle companion that soothes without words, and holds you steady when the world feels too loud.
+            Isle of Mist was born from a simple longing: to bring nature's stillness closer. To let each crystal become a personal sanctuary — a gentle companion that soothes without words, and holds you steady when the world feels too loud.
           </p>
           <Link href="/about" className="btn-primary">
             Read Our Full Story <ArrowRight className="w-4 h-4" />
@@ -227,7 +229,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-4xl font-serif font-bold text-gray-900 mb-3">What Our Customers Say</h2>
-            <p className="text-gray-500">Real stories from the lsle of Mist community</p>
+            <p className="text-gray-500">Real stories from the Isle of Mist community</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[

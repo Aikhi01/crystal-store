@@ -44,7 +44,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.slug}`} className="group block">
-      <div className="card hover:shadow-md transition-shadow duration-200">
+      <div className="card hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden">
+        {/* Crystal shimmer overlay */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-10"
+          style={{
+            background: 'linear-gradient(105deg, transparent 30%, rgba(167,139,250,0.15) 50%, transparent 70%)',
+            animation: 'shimmer 1.5s ease-in-out infinite',
+          }}
+        />
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <Image
