@@ -10,19 +10,19 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-white font-serif text-xl font-bold mb-4 tracking-wide">
               <Leaf className="w-5 h-5 text-crystal-400" />
-              lsle of Mist
+              Isle of Mist
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
               Where the forest meets the mist. Every natural crystal carries the quiet healing power of the earth — handcrafted for your journey.
             </p>
             <div className="flex items-center gap-3">
-              <a href="#" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
+              <a href="https://www.instagram.com/isle.of.mist/" target="_blank" rel="noopener noreferrer" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
+              <a href="https://www.facebook.com/profile.php?id=61589717383572" target="_blank" rel="noopener noreferrer" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="#" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
+              <a href="https://x.com/Isle_of_Mist" target="_blank" rel="noopener noreferrer" className="p-2 bg-crystal-800 rounded-lg hover:bg-crystal-600 transition-colors">
                 <Twitter className="w-4 h-4" />
               </a>
             </div>
@@ -76,7 +76,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-crystal-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
-          <p>© {new Date().getFullYear()} lsle of Mist. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Isle of Mist. All rights reserved.</p>
           <div className="flex items-center gap-6">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>
